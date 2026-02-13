@@ -1,0 +1,150 @@
+# Structure (struct)
+
+A **struct** in C++ is a user-defined type that groups data (and optionally member functions), with **public** access by default. It is the same as a **class** except for that default; it is often used for plain data aggregates. This document covers struct syntax, aggregate initialization, designated initializers, and when to use struct vs class. For members, constructors, and inheritance see [Class](class.md) and [Constructors & destructors](constructors-and-destructors.md).
+
+---
+
+## 1. What is a struct?
+
+A **struct** is defined with the keyword **struct** and a body of members. Default access is **public** (unlike **class**, which defaults to **private**).
+
+```cpp
+struct Point {
+    double x;
+    double y;
+};
+
+Point p;
+p.x = 1.0;
+p.y = 2.0;
+```
+
+You can add **public**, **private**, and **protected** sections, member functions, constructors, and inheritance to a struct exactly as with a class. The only difference is the default for members before the first access specifier. See [Class](class.md).
+
+---
+
+## 2. Struct for data aggregates
+
+A **struct** is often used as a **data aggregate**: a type whose members are just data, with no invariants or complex behaviour. That fits:
+
+- Configuration or options (e.g. a bundle of parameters).
+- Return values with multiple fields (e.g. a result plus a status).
+- C compatibility (struct layout and initialization).
+
+Convention: use **struct** when the type is “just data” or a simple record; use **class** when you have invariants and encapsulation. See [Encapsulation](encapsulation.md).
+
+---
+
+## 3. Aggregate initialization
+
+An **aggregate** is an array or a type with no user-declared constructors, no private/protected non-static data members, no base classes, and no virtual functions (simplified). Structs that are aggregates can be initialized with **brace-initialization** (list of values in order).
+
+```cpp
+struct Point {
+    double x, y;
+};
+
+Point p1 = {1.0, 2.0};
+Point p2{3.0, 4.0};   // direct initialization
+Point p3 = {};        // zero-initialize: 0.0, 0.0
+```
+
+- Members are initialized in **declaration order**.
+- Missing trailing members are **value-initialized** (zero for scalars).
+- Excess initializers are an error.
+
+If you add a user-declared constructor, the type is no longer an aggregate and you use that constructor instead of aggregate init (unless you also provide an initializer-list constructor or default member initializers).
+
+---
+
+## 4. Designated initializers (C++20)
+
+You can initialize by **member name** so order and “skip” are explicit. Unmentioned members are value-initialized.
+
+```cpp
+struct Config {
+    int timeout = 30;
+    std::string host = "localhost";
+    bool verbose = false;
+};
+
+Config c1 = { .timeout = 5, .host = "server" };  // verbose is false
+Config c2 = { .verbose = true };                 // timeout 30, host "localhost"
+```
+
+Designations must appear in **declaration order**; you cannot reorder or mix designated and non-designated initializers in the same list in a way that breaks order.
+
+---
+
+## 5. Default member initializers
+
+You can give members a default value in the struct definition. Aggregate init then only needs to set the ones you want to override.
+
+```cpp
+struct Options {
+    int threads = 4;
+    bool debug = false;
+};
+
+Options o1;           // threads 4, debug false
+Options o2 = {8};     // threads 8, debug false
+Options o3 = {8, true};
+```
+
+---
+
+## 6. Struct vs class — when to use which
+
+| Use | Typical choice |
+|-----|-----------------|
+| Plain data; no invariants; aggregate init | **struct** |
+| Data + behaviour; invariants; encapsulation | **class** |
+| C interop; layout matters | **struct** (often keep as aggregate) |
+| Polymorphism, virtual functions | **class** (or struct; same capability) |
+
+The language treats them the same except for default access. The convention above keeps code intent clear: struct = “data bag,” class = “type with behaviour and hidden state.”
+
+---
+
+## 7. Nested and anonymous structs
+
+You can define a struct inside another struct (or class) for scoping.
+
+```cpp
+struct Outer {
+    struct Inner {
+        int value;
+    };
+    Inner i;
+};
+Outer::Inner x;
+```
+
+**Anonymous structs** (no name after **struct**) are not standard C++; in C you might see them for “flat” members. In C++ use a named nested struct or a namespace if you need grouping.
+
+---
+
+## 8. Size and layout
+
+**sizeof(struct)** is the size of all non-static data members (plus padding for alignment). Empty structs have **sizeof** at least 1. Layout is implementation-defined; for C compatibility or low-level use, **standard-layout** types have predictable layout. A struct is standard-layout if it has no virtuals, no mixed access among members in the same section, and other conditions (see the standard). See [Data types](data-types.md) for **sizeof** and **alignof**.
+
+---
+
+## 9. Quick reference
+
+| Topic | Summary |
+|-------|---------|
+| struct vs class | Same except default access: struct = public |
+| Aggregate init | Brace list in member order; { }, { a }, { a, b } |
+| Designated init (C++20) | { .member = value }; unmentioned members value-initialized |
+| Default member init | In-class = value; then aggregate init overrides as needed |
+| When to use struct | Data aggregates, options, C interop, “plain data” |
+
+---
+
+## See also
+
+- [Class](class.md) – members, access, static; class and struct are the same type of thing
+- [Constructors & destructors](constructors-and-destructors.md) – if you add constructors, aggregate rules change
+- [Encapsulation](encapsulation.md) – when to hide data (class) vs keep it simple (struct)
+- [Data types](data-types.md) – sizeof, alignof, fundamental types
