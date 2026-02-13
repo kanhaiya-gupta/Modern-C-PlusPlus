@@ -4,6 +4,32 @@
 
 ---
 
+## When to use enums
+
+Enums work best when you have a **small, fixed set of mutually exclusive options**—things that can only be one value at a time.
+
+**Switch / mode (e.g. ON/OFF, or a few modes):**
+
+```cpp
+enum class Power { Off, On };
+enum class Mode { Idle, Low, Medium, High };
+```
+
+Use an enum instead of a bare **bool** when you have more than two states (e.g. Low/Medium/High) or when **On**/ **Off** are clearer than **true**/ **false**.
+
+**State (e.g. traffic signals, connection status):**
+
+```cpp
+enum class TrafficLight { Red, Yellow, Green };
+enum class ConnectionState { Disconnected, Connecting, Connected, Failed };
+```
+
+Here the value represents “current state”; you typically use it in **switch** or **if** to decide what to do next. Enums make the possible states explicit and give them readable names instead of magic numbers (0, 1, 2).
+
+**In short:** use enums for **states** (traffic light, connection, parser state) and for **modes/options** (ON/OFF, Low/Medium/High, or a small set of choices). They keep code clear and prevent invalid values.
+
+---
+
 ## 1. Scoped enums (enum class, C++11)
 
 A **scoped enumeration** is declared with **enum class** (or **enum struct**; same meaning). The enumerator names are in the enum’s scope and must be qualified when used. They do **not** implicitly convert to or from **int**.
@@ -70,6 +96,55 @@ enum class Flags { A = 1, B = 2, C = 4 };
 ```
 
 Use explicit values when you need to match an external protocol or bit flags.
+
+---
+
+## 4.1 Enumerators are constants
+
+The names **A**, **B**, **C** (or **Red**, **Green**, **Blue**, etc.) are **constants**: each has a fixed value that does not change. You can choose any valid identifier as the name; it still represents a constant value.
+
+```cpp
+enum class Option { OptionA, OptionB, OptionC };  // same as A, B, C with values 0, 1, 2
+enum class Level { Low = 10, Medium = 50, High = 100 };  // names and values are fixed
+```
+
+So you can use short names (A, B, C), longer names (OptionA, OptionB), or domain names (Red, Idle, NotFound)—they are all named constants. The **value** of each enumerator is fixed at compile time (either 0, 1, 2, … or the explicit value you assign).
+
+---
+
+## 4.2 Mapping enum values to string text (for display)
+
+Often you need a **human-readable string** for an enum value (e.g. for logging or UI). You can map the enum to **const** string literals with a function or a lookup table.
+
+**Using a switch:**
+
+```cpp
+enum class State { Idle, Running, Done };
+
+const char* to_string(State s) {
+    switch (s) {
+        case State::Idle:   return "Idle";
+        case State::Running: return "Running";
+        case State::Done:   return "Done";
+    }
+    return "Unknown";
+}
+// std::cout << to_string(State::Running);  // "Running"
+```
+
+**Using an array (when values are 0, 1, 2, …):**
+
+```cpp
+enum class Color { Red, Green, Blue };
+
+constexpr const char* color_names[] = { "Red", "Green", "Blue" };
+
+const char* to_string(Color c) {
+    return color_names[static_cast<int>(c)];
+}
+```
+
+So: the enum gives you **constant names** in code (e.g. `State::Running`); you add a small layer (function or array) to turn those **constants into text** when you need to display them. See [Const correctness](const-correctness.md) for **const** and [Data types](data-types.md) for string literals.
 
 ---
 
@@ -151,6 +226,8 @@ See [Casting](casting.md).
 |-------|---------|
 | enum class | Scoped; no implicit conversion; use **EnumName::Enumerator** |
 | enum (unscoped) | Enumerators in surrounding scope; implicit conversion to int |
+| Enumerators | Named constants; you choose names (A, B or OptionA, OptionB, etc.) and optional values |
+| Enum → string | Use a **switch** or **array** to map enum value to **const char*** or **std::string** for display |
 | Underlying type | Default **int** for enum class; set with **: type** |
 | Explicit values | **Name = value**; next is previous + 1 if omitted |
 | Forward declaration | Requires fixed underlying type: **enum class E : int;** |

@@ -4,6 +4,65 @@ A **struct** in C++ is a user-defined type that groups data (and optionally memb
 
 ---
 
+## When to use structs
+
+Structs work best when you need to **group related data** into one object with **no (or simple) behaviour**—no invariants to enforce, no hidden state. The data is the point; you read and write members directly or through simple helpers.
+
+**Plain data / record (e.g. a point, a person, one row of data):**
+
+```cpp
+struct Point { double x, y; };
+struct Person { std::string name; int age; };
+struct Record { int id; std::string key; double value; };
+```
+
+Use a struct when the type is “just a bundle of fields” and any combination of values is valid. You can initialize with **{ }** and pass or return the whole thing by value or const reference.
+
+**Returning the results of a function (multiple values):**
+
+A very common use of a struct is to **return more than one value** from a function. Instead of output parameters or a **std::pair**, you return a small struct with named members—clear to read and easy to extend.
+
+```cpp
+struct Result { bool success; std::string message; };
+Result parse(const std::string& input);
+// Result r = parse("...");  then use r.success and r.message
+
+struct Bounds { int min; int max; };
+Bounds findMinMax(const std::vector<int>& v);
+// Bounds b = findMinMax(v);  then use b.min and b.max
+```
+
+So yes: **returning the results of a function** is one of the main uses of a struct—when the result is naturally several values (success + message, min + max, etc.).
+
+**Options / configuration (e.g. settings for a function or a module):**
+
+```cpp
+struct Config {
+    int timeout = 30;
+    std::string host = "localhost";
+    bool verbose = false;
+};
+void connect(const Config& cfg);
+```
+
+Callers can use **designated initializers** (C++20) to set only the fields they care about: **Config c = { .timeout = 5, .verbose = true };**. See section 5 below.
+
+**C interop / fixed layout:**
+
+When you talk to C code or care about memory layout (e.g. file format, network packet), a **plain struct** with only data members and no virtuals keeps layout predictable. Often you keep it as an aggregate (no user-defined constructors) so **{ }** initialization matches C.
+
+**Struct vs class (in short):**
+
+| Use | Typical choice |
+|-----|----------------|
+| “Just data”; any values OK; init with **{ }** | **struct** |
+| Invariants (e.g. “balance never negative”); hide implementation | **class** |
+| C interop; options bundle; return multiple values | **struct** |
+
+So: use a **struct** when you are grouping data or options and don’t need encapsulation; use a **class** when you have rules to enforce and want to hide internals. See [Encapsulation](encapsulation.md) and section 7 below for more.
+
+---
+
 ## 1. What is a struct?
 
 A **struct** is defined with the keyword **struct** and a body of members. Default access is **public** (unlike **class**, which defaults to **private**).
