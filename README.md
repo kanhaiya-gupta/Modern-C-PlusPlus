@@ -13,6 +13,7 @@ All documentation lives in the **[`docs/`](docs/)** directory. Topics are groupe
 | Topic | File | Description |
 |-------|------|-------------|
 | Data Types | [data-types.md](docs/data-types.md) | Fundamental types, literals, type conversion, `sizeof` |
+| Enums | [enums.md](docs/enums.md) | enum class (scoped), unscoped enum, underlying type, conversion |
 | Functions | [functions.md](docs/functions.md) | Parameters, return types, overloading, `std::function`, smart pointers |
 | Namespaces | [namespaces.md](docs/namespaces.md) | Namespace definition, `using`, anonymous namespace, ADL |
 

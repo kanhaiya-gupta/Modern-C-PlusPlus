@@ -23,7 +23,87 @@ You can add **public**, **private**, and **protected** sections, member function
 
 ---
 
-## 2. Struct for data aggregates
+## 2. Public, private, and protected in a struct
+
+A struct can use the same **access specifiers** as a class. Before any specifier, members are **public** (in a class they would be private). After a specifier, the listed members follow that access until the next specifier.
+
+### 2.1 Example: public and private
+
+```cpp
+struct Account {
+    // public by default (struct)
+    std::string owner() const { return owner_; }
+    double balance() const { return balance_; }
+    void deposit(double amount) {
+        if (amount > 0) balance_ += amount;
+    }
+
+private:
+    std::string owner_;
+    double balance_ = 0.0;
+};
+
+Account a;
+a.owner();        // OK: public
+a.deposit(100.0); // OK: public
+// a.balance_ = 0;  // Error: balance_ is private
+```
+
+Private members are only accessible from member functions (and friends) of the same struct. Public members form the interface.
+
+### 2.2 Example: explicit public section
+
+You can write **public:** explicitly to make the default obvious or to switch back after private/protected.
+
+```cpp
+struct Widget {
+public:
+    int id() const { return id_; }
+    void setId(int id) { id_ = id; }
+private:
+    int id_ = 0;
+};
+
+Widget w;
+w.id();     // OK
+w.setId(1); // OK
+// w.id_ = 1;  // Error: private
+```
+
+### 2.3 Example: protected (for inheritance)
+
+**protected** members are accessible in this struct and in **derived** structs (or classes); they are not accessible from unrelated code.
+
+```cpp
+struct Base {
+    int getPublic() const { return pub_; }
+protected:
+    int getProtected() const { return prot_; }
+    int prot_ = 0;
+private:
+    int pub_ = 0;
+};
+
+struct Derived : Base {
+    void use() {
+        getPublic();    // OK: public in Base
+        getProtected(); // OK: we are derived
+        prot_;          // OK: we are derived
+        // pub_;        // Error: private in Base
+    }
+};
+
+Base b;
+b.getPublic();    // OK
+// b.getProtected();  // Error: protected
+// b.prot_;            // Error: protected
+```
+
+So in a struct you can use **public**, **private**, and **protected** the same way as in a class; only the default before the first specifier is different. See [Encapsulation](encapsulation.md) and [Inheritance](inheritance.md).
+
+---
+
+## 3. Struct for data aggregates (plain data)
 
 A **struct** is often used as a **data aggregate**: a type whose members are just data, with no invariants or complex behaviour. That fits:
 
@@ -35,7 +115,7 @@ Convention: use **struct** when the type is “just data” or a simple record; 
 
 ---
 
-## 3. Aggregate initialization
+## 4. Aggregate initialization
 
 An **aggregate** is an array or a type with no user-declared constructors, no private/protected non-static data members, no base classes, and no virtual functions (simplified). Structs that are aggregates can be initialized with **brace-initialization** (list of values in order).
 
@@ -57,7 +137,7 @@ If you add a user-declared constructor, the type is no longer an aggregate and y
 
 ---
 
-## 4. Designated initializers (C++20)
+## 5. Designated initializers (C++20)
 
 You can initialize by **member name** so order and “skip” are explicit. Unmentioned members are value-initialized.
 
@@ -76,7 +156,7 @@ Designations must appear in **declaration order**; you cannot reorder or mix des
 
 ---
 
-## 5. Default member initializers
+## 6. Default member initializers
 
 You can give members a default value in the struct definition. Aggregate init then only needs to set the ones you want to override.
 
@@ -93,7 +173,7 @@ Options o3 = {8, true};
 
 ---
 
-## 6. Struct vs class — when to use which
+## 7. Struct vs class — when to use which
 
 | Use | Typical choice |
 |-----|-----------------|
@@ -106,7 +186,7 @@ The language treats them the same except for default access. The convention abov
 
 ---
 
-## 7. Nested and anonymous structs
+## 8. Nested and anonymous structs
 
 You can define a struct inside another struct (or class) for scoping.
 
@@ -124,17 +204,18 @@ Outer::Inner x;
 
 ---
 
-## 8. Size and layout
+## 9. Size and layout
 
 **sizeof(struct)** is the size of all non-static data members (plus padding for alignment). Empty structs have **sizeof** at least 1. Layout is implementation-defined; for C compatibility or low-level use, **standard-layout** types have predictable layout. A struct is standard-layout if it has no virtuals, no mixed access among members in the same section, and other conditions (see the standard). See [Data types](data-types.md) for **sizeof** and **alignof**.
 
 ---
 
-## 9. Quick reference
+## 10. Quick reference
 
 | Topic | Summary |
 |-------|---------|
 | struct vs class | Same except default access: struct = public |
+| public / private / protected | Same as class; use access specifiers to hide data or allow derived access |
 | Aggregate init | Brace list in member order; { }, { a }, { a, b } |
 | Designated init (C++20) | { .member = value }; unmentioned members value-initialized |
 | Default member init | In-class = value; then aggregate init overrides as needed |

@@ -57,9 +57,13 @@ public:
 - **Must** use the list for: const members, reference members, base classes, and members with no default constructor.
 - **Should** use the list for others too; otherwise you default-initialize then assign (extra work, and not possible for const/reference).
 
-### 1.4 Parameterized constructors
+### 1.4 Parameterized constructors: how to take arguments
 
-Constructors that take arguments let you set initial state directly.
+Constructors can take parameters **by value**, **by reference**, **by rvalue reference**, or **by smart pointer**. Choose based on whether you need a copy, want to avoid copying, need to modify the argument, or are taking ownership.
+
+#### 1.4.1 By value
+
+Use for small, cheap-to-copy types (e.g. `int`, `double`, small structs). The parameter is a copy; the caller’s object is unchanged.
 
 ```cpp
 class Point {
@@ -68,8 +72,120 @@ public:
     Point(double x, double y) : x_(x), y_(y) {}
 };
 Point p(1.0, 2.0);
-Point q{1.0, 2.0};  // list initialization, same effect
 ```
+
+If the type is moveable, the caller can pass a temporary and the copy may be elided or become a move.
+
+#### 1.4.2 By const reference
+
+Use for expensive-to-copy types when you only read the argument (e.g. `std::string`, containers). No copy; the constructor uses the original object without modifying it.
+
+```cpp
+class Person {
+    std::string name_;
+    int age_;
+public:
+    Person(const std::string& name, int age) : name_(name), age_(age) {}
+};
+Person p("Alice", 30);  // name is not copied until stored in name_
+```
+
+Use **const T&** for parameters you don’t modify. Temporaries can bind to **const T&**.
+
+#### 1.4.3 By non-const reference
+
+Use when the constructor must **modify** the argument (e.g. take ownership of a handle from it) or when you need to store a reference to the argument. The caller must pass an lvalue.
+
+```cpp
+class Sink {
+    std::vector<int>& ref_;  // reference member: must bind in initializer list
+public:
+    explicit Sink(std::vector<int>& ref) : ref_(ref) {}
+    void add(int x) { ref_.push_back(x); }
+};
+std::vector<int> v;
+Sink s(v);  // s holds a reference to v
+s.add(1);   // v now has 1
+```
+
+Reference members must be initialized in the member initializer list and cannot be rebound.
+
+#### 1.4.4 By rvalue reference (move)
+
+Use when the constructor **takes ownership** of a resource from the argument and the type is moveable. The source is left in a valid but unspecified state. See [Move semantics](move-semantics.md).
+
+```cpp
+class Buffer {
+    std::vector<int> data_;
+public:
+    explicit Buffer(std::vector<int>&& data) : data_(std::move(data)) {}
+};
+std::vector<int> vec = {1, 2, 3};
+Buffer b(std::move(vec));  // vec may be empty; b owns the elements
+```
+
+Taking **T&&** and moving into a member is the usual pattern for “sink” parameters that take ownership.
+
+#### 1.4.5 By smart pointer (taking ownership)
+
+Use **std::unique_ptr&lt;T&gt;** when the constructor **takes exclusive ownership** of a heap object. The caller transfers ownership with **std::move**.
+
+```cpp
+class WidgetHolder {
+    std::unique_ptr<Widget> widget_;
+public:
+    explicit WidgetHolder(std::unique_ptr<Widget> w) : widget_(std::move(w)) {}
+};
+WidgetHolder h(std::make_unique<Widget>());
+// or: auto w = std::make_unique<Widget>(); WidgetHolder h(std::move(w));
+```
+
+Use **std::shared_ptr&lt;T&gt;** when the constructor **shares ownership**. The caller can pass by value (increments ref count) or by const reference (no increment; use if you only need to use the object, not store a copy).
+
+```cpp
+class SharedResource {
+    std::shared_ptr<Resource> resource_;
+public:
+    explicit SharedResource(std::shared_ptr<Resource> r) : resource_(std::move(r)) {}
+    // or: SharedResource(const std::shared_ptr<Resource>& r) : resource_(r) {}
+};
+auto res = std::make_shared<Resource>();
+SharedResource s1(res);   // ref count 2
+SharedResource s2(std::move(res));  // ref count still 2; res is null
+```
+
+See [Smart pointers](smart-pointers.md).
+
+#### 1.4.6 By pointer (optional or non-owning)
+
+Use a **raw pointer** when the argument is optional (e.g. “parent” or “config”) or when the class does **not** take ownership. Check for **nullptr** before use.
+
+```cpp
+class Node {
+    Node* parent_ = nullptr;
+    std::string name_;
+public:
+    explicit Node(const std::string& name, Node* parent = nullptr)
+        : parent_(parent), name_(name) {}
+    Node* parent() const { return parent_; }
+};
+Node root("root");
+Node child("child", &root);  // child does not own root
+```
+
+Do not use a raw pointer parameter to transfer ownership; use **std::unique_ptr** instead.
+
+#### 1.4.7 Summary: constructor parameter choices
+
+| Goal | Parameter type | Example |
+|------|----------------|---------|
+| Copy; cheap type | By value | `Widget(int id)` |
+| Read-only; expensive type | const T& | `Person(const std::string& name)` |
+| Modify argument or store reference | T& | `Sink(std::vector<int>& ref)` |
+| Take ownership (moveable type) | T&& | `Buffer(std::vector<int>&& data)` |
+| Take exclusive ownership (heap) | std::unique_ptr&lt;T&gt; | `Holder(std::unique_ptr&lt;Widget&gt; w)` |
+| Share ownership | std::shared_ptr&lt;T&gt; | `Shared(std::shared_ptr&lt;Resource&gt; r)` |
+| Optional / non-owning | T* | `Node(const std::string& name, Node* parent)` |
 
 ### 1.5 Copy constructor
 
@@ -223,6 +339,7 @@ Use = default when the generated behaviour is correct; use = delete to disable c
 
 | Item | Notes |
 |------|--------|
+| Ctor params | Value (cheap); const T& (read-only, expensive); T&& (move); unique_ptr (take ownership); shared_ptr (share); T* (optional/non-owning) |
 | Default ctor | No args; use initializer list |
 | Copy ctor | `ClassName(const ClassName&)` |
 | Move ctor | `ClassName(ClassName&&) noexcept` |

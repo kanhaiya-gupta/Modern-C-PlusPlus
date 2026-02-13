@@ -19,6 +19,7 @@ create_placeholder() {
 
 # Basics
 create_placeholder "$DOCS_DIR/data-types.md" "Data Types"
+create_placeholder "$DOCS_DIR/enums.md" "Enums"
 create_placeholder "$DOCS_DIR/functions.md" "Functions"
 create_placeholder "$DOCS_DIR/namespaces.md" "Namespaces"
 
