@@ -58,6 +58,7 @@ All documentation lives in the **[`docs/`](docs/)** directory. Topics are groupe
 |-------|------|-------------|
 | Ranges & Views | [ranges-and-views.md](docs/ranges-and-views.md) | Range algorithms, views, pipelines (C++20) |
 | Lazy Evaluation | [lazy-evaluation.md](docs/lazy-evaluation.md) | Lazy views, generators, when to use lazy |
+| Analysis Pipelines | [analysis-pipelines.md](docs/analysis-pipelines.md) | Design of analysis pipelines, large data, streaming, chunking; cases (log processing, ETL, aggregation, etc.) |
 
 ### Generic programming
 
@@ -81,6 +82,7 @@ All documentation lives in the **[`docs/`](docs/)** directory. Topics are groupe
 |-------|------|-------------|
 | const Correctness | [const-correctness.md](docs/const-correctness.md) | const parameters, const members, mutable |
 | Exception Handling | [exception-handling.md](docs/exception-handling.md) | throw, try/catch, noexcept, exception safety |
+| Defensive Programming | [defensive-programming.md](docs/defensive-programming.md) | assertions, input validation, null/bounds checks, RAII |
 
 ### Standard library
 
@@ -88,6 +90,7 @@ All documentation lives in the **[`docs/`](docs/)** directory. Topics are groupe
 |-------|------|-------------|
 | Iterators | [iterators.md](docs/iterators.md) | Iterator categories, begin/end, invalidation, sentinels |
 | Containers | [containers.md](docs/containers.md) | Container categories, which to use when |
+| Vector Reference | [vector-reference.md](docs/vector-reference.md) | All std::vector operations: construct, capacity, access, modifiers, iterators, algorithms |
 | STL Containers | [stl-containers.md](docs/stl-containers.md) | vector, map, set, unordered_*, adapters, complexity |
 
 ### Practice
@@ -95,6 +98,15 @@ All documentation lives in the **[`docs/`](docs/)** directory. Topics are groupe
 | Topic | File | Description |
 |-------|------|-------------|
 | Programming in C++ | [programming_in_cplusplus.md](docs/programming_in_cplusplus.md) | Header/cpp separation, static, const, lambdas, ranges, threading, templates, inheritance, polymorphism, smart pointers, move, exceptions—all with class-based examples |
+| Practice Questions | [practice-questions.md](docs/practice-questions.md) | Coding interview practice: vectors, ranges, lambdas, lazy evaluation, map, unordered_map with solutions |
+| C++ Cheat Sheet | [cpp-cheatsheet.md](docs/cpp-cheatsheet.md) | One concept + one example each (compile, STL, lambdas, pointers, classes, templates)—exam reference |
+
+### Libraries & frameworks
+
+| Topic | File | Description |
+|-------|------|-------------|
+| Qt | [qt.md](docs/qt.md) | Qt overview: QObject, signals/slots, parent–child ownership, Qt types vs std, build (moc, qmake, CMake) |
+| QML | [qml.md](docs/qml.md) | QML overview: declarative UI, properties/bindings, signals/handlers, exposing C++ to QML, loading from C++ |
 
 ---
 

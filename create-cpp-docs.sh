@@ -63,14 +63,21 @@ create_placeholder "$DOCS_DIR/casting.md" "Casting"
 # Correctness & robustness
 create_placeholder "$DOCS_DIR/const-correctness.md" "const Correctness"
 create_placeholder "$DOCS_DIR/exception-handling.md" "Exception Handling"
+create_placeholder "$DOCS_DIR/defensive-programming.md" "Defensive Programming"
 
 # Standard library
 create_placeholder "$DOCS_DIR/iterators.md" "Iterators"
 create_placeholder "$DOCS_DIR/containers.md" "Containers"
+create_placeholder "$DOCS_DIR/vector-reference.md" "Vector Reference"
 create_placeholder "$DOCS_DIR/stl-containers.md" "STL Containers"
 
 # Practice
 create_placeholder "$DOCS_DIR/programming_in_cplusplus.md" "Programming in C++"
+create_placeholder "$DOCS_DIR/practice-questions.md" "Practice Questions (Coding Interviews)"
+
+# Libraries & frameworks
+create_placeholder "$DOCS_DIR/qt.md" "Qt"
+create_placeholder "$DOCS_DIR/qml.md" "QML"
 
 echo ""
 echo "Done. Placeholder files are in: $DOCS_DIR/"
